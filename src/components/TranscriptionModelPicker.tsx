@@ -201,6 +201,8 @@ interface TranscriptionModelPickerProps {
   setCustomTranscriptionApiKey?: (key: string) => void;
   cloudTranscriptionBaseUrl?: string;
   setCloudTranscriptionBaseUrl?: (url: string) => void;
+  realtimeWsBaseUrl?: string;
+  setRealtimeWsBaseUrl?: (url: string) => void;
   className?: string;
   variant?: "onboarding" | "settings";
 }
@@ -276,6 +278,8 @@ export default function TranscriptionModelPicker({
   setCustomTranscriptionApiKey,
   cloudTranscriptionBaseUrl = "",
   setCloudTranscriptionBaseUrl,
+  realtimeWsBaseUrl = "",
+  setRealtimeWsBaseUrl,
   className = "",
   variant = "settings",
 }: TranscriptionModelPickerProps) {
@@ -899,6 +903,23 @@ export default function TranscriptionModelPicker({
                     helpText=""
                   />
                 </div>
+
+                {selectedCloudProvider === "openai" && (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-foreground">
+                      Realtime WebSocket URL (optional)
+                    </label>
+                    <Input
+                      value={realtimeWsBaseUrl}
+                      onChange={(e) => setRealtimeWsBaseUrl?.(e.target.value)}
+                      placeholder="wss://api.openai.com (default)"
+                      className="h-8 text-sm"
+                    />
+                    <p className="text-[10px] text-muted-foreground">
+                      Self-hosted streaming STT server (e.g. ws://10.2.0.116:8000 for Speaches)
+                    </p>
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-foreground">{t("common.model")}</label>

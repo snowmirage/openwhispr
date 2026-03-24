@@ -178,6 +178,8 @@ interface TranscriptionSectionProps {
   setCustomTranscriptionApiKey: (key: string) => void;
   cloudTranscriptionBaseUrl?: string;
   setCloudTranscriptionBaseUrl: (url: string) => void;
+  realtimeWsBaseUrl?: string;
+  setRealtimeWsBaseUrl?: (url: string) => void;
   toast: (opts: {
     title: string;
     description: string;
@@ -213,6 +215,8 @@ function TranscriptionSection({
   setCustomTranscriptionApiKey,
   cloudTranscriptionBaseUrl,
   setCloudTranscriptionBaseUrl,
+  realtimeWsBaseUrl,
+  setRealtimeWsBaseUrl,
   toast,
 }: TranscriptionSectionProps) {
   const { t } = useTranslation();
@@ -389,6 +393,8 @@ function TranscriptionSection({
           setCustomTranscriptionApiKey={setCustomTranscriptionApiKey}
           cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
           setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+          realtimeWsBaseUrl={realtimeWsBaseUrl}
+          setRealtimeWsBaseUrl={setRealtimeWsBaseUrl}
           variant="settings"
         />
       )}
@@ -645,6 +651,8 @@ export default function SettingsPage({ activeSection = "general" }: SettingsPage
     cloudTranscriptionProvider,
     cloudTranscriptionModel,
     cloudTranscriptionBaseUrl,
+    realtimeWsBaseUrl,
+    setRealtimeWsBaseUrl,
     cloudReasoningBaseUrl,
     useReasoningModel,
     reasoningModel,
@@ -2879,6 +2887,8 @@ EOF`,
             setCustomTranscriptionApiKey={setCustomTranscriptionApiKey}
             cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
             setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+            realtimeWsBaseUrl={realtimeWsBaseUrl}
+            setRealtimeWsBaseUrl={setRealtimeWsBaseUrl}
             toast={toast}
           />
         );
