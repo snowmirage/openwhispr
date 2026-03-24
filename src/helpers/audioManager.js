@@ -1943,6 +1943,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             preferredLanguage: warmupLang,
             cloudTranscriptionModel,
             cloudTranscriptionMode,
+            realtimeWsBaseUrl,
           } = getSettings();
           const res = await provider.warmup({
             sampleRate: 16000,
@@ -1950,6 +1951,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             keyterms: this.getKeyterms(),
             model: cloudTranscriptionModel,
             mode: cloudTranscriptionMode === "byok" ? "byok" : "openwhispr",
+            wsBaseUrl: realtimeWsBaseUrl || "",
           });
           // Throw error to trigger retry if AUTH_EXPIRED
           if (!res.success && res.code) {
@@ -2164,6 +2166,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           preferredLanguage: preferredLang,
           cloudTranscriptionModel,
           cloudTranscriptionMode,
+          realtimeWsBaseUrl: startWsBaseUrl,
         } = getSettings();
         const res = await provider.start({
           sampleRate: 16000,
@@ -2171,6 +2174,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           keyterms: this.getKeyterms(),
           model: cloudTranscriptionModel,
           mode: cloudTranscriptionMode === "byok" ? "byok" : "openwhispr",
+          wsBaseUrl: startWsBaseUrl || "",
         });
 
         if (!res.success) {

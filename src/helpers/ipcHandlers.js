@@ -2488,6 +2488,7 @@ class IPCHandlers {
         model: options.model,
         language: options.language,
         preconfigured: options.mode !== "byok",
+        wsBaseUrl: options.wsBaseUrl || "",
       };
       let pairs;
       if (hasNativeMeetingSystemAudio()) {
@@ -2569,6 +2570,7 @@ class IPCHandlers {
         apiKey,
         model: options.model || "gpt-4o-mini-transcribe",
         preconfigured: isCloud,
+        wsBaseUrl: options.wsBaseUrl || "",
       });
       this._dictationStreaming = streaming;
     };

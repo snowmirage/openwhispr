@@ -33,8 +33,8 @@ class OpenAIRealtimeStreaming {
   }
 
   async connect(options = {}) {
-    const { apiKey, model, preconfigured } = options;
-    if (!apiKey) throw new Error("OpenAI API key is required");
+    const { apiKey, model, preconfigured, wsBaseUrl } = options;
+    if (!apiKey) throw new Error("API key is required");
 
     if (this.isConnected || this.isConnecting) {
       debugLogger.debug("OpenAI Realtime already connected/connecting");
@@ -51,8 +51,9 @@ class OpenAIRealtimeStreaming {
     this.coldStartBufferSize = 0;
     this.speechStartedAt = null;
 
-    const url = "wss://api.openai.com/v1/realtime?intent=transcription";
-    debugLogger.debug("OpenAI Realtime connecting", { model: this.model });
+    const baseUrl = wsBaseUrl || "wss://api.openai.com";
+    const url = `${baseUrl}/v1/realtime?intent=transcription`;
+    debugLogger.debug("OpenAI Realtime connecting", { model: this.model, baseUrl });
 
     return new Promise((resolve, reject) => {
       this.pendingResolve = resolve;

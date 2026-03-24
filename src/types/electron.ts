@@ -1162,10 +1162,12 @@ declare global {
       dictationRealtimeWarmup?: (options: {
         model?: string;
         mode?: "byok" | "openwhispr";
+        wsBaseUrl?: string;
       }) => Promise<{ success: boolean; error?: string }>;
       dictationRealtimeStart?: (options: {
         model?: string;
         mode?: "byok" | "openwhispr";
+        wsBaseUrl?: string;
       }) => Promise<{ success: boolean; error?: string }>;
       dictationRealtimeSend?: (buffer: ArrayBuffer) => void;
       dictationRealtimeStop?: () => Promise<{ success: boolean; text: string }>;
