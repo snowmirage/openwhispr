@@ -147,7 +147,6 @@ class OpenAIRealtimeStreaming {
             const updateType = this.isSelfHosted ? "session.update" : "transcription_session.update";
             const sessionConfig = this.isSelfHosted
               ? {
-                  input_audio_format: "pcm16",
                   input_audio_transcription: { model: this.model },
                 }
               : {
