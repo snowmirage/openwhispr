@@ -120,6 +120,7 @@ class OpenAIRealtimeStreaming {
       const event = JSON.parse(data.toString());
 
       switch (event.type) {
+        case "session.created":
         case "transcription_session.created": {
           if (this.preconfigured) {
             // Server-side ephemeral token already configured the session;
@@ -161,6 +162,7 @@ class OpenAIRealtimeStreaming {
           break;
         }
 
+        case "session.updated":
         case "transcription_session.updated": {
           if (this.pendingResolve) {
             this.isConnected = true;
