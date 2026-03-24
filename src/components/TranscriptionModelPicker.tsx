@@ -905,19 +905,37 @@ export default function TranscriptionModelPicker({
                 </div>
 
                 {selectedCloudProvider === "openai" && (
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-foreground">
-                      Realtime WebSocket URL (optional)
-                    </label>
-                    <Input
-                      value={realtimeWsBaseUrl}
-                      onChange={(e) => setRealtimeWsBaseUrl?.(e.target.value)}
-                      placeholder="wss://api.openai.com (default)"
-                      className="h-8 text-sm"
-                    />
-                    <p className="text-[10px] text-muted-foreground">
-                      Self-hosted streaming STT server (e.g. ws://10.2.0.116:8000 for Speaches)
-                    </p>
+                  <div className="space-y-2">
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-medium text-foreground">
+                        Realtime WebSocket URL (optional)
+                      </label>
+                      <Input
+                        value={realtimeWsBaseUrl}
+                        onChange={(e) => setRealtimeWsBaseUrl?.(e.target.value)}
+                        placeholder="wss://api.openai.com (default)"
+                        className="h-8 text-sm"
+                      />
+                      <p className="text-[10px] text-muted-foreground">
+                        Self-hosted streaming STT server (e.g. ws://10.2.0.116:8000 for Speaches)
+                      </p>
+                    </div>
+                    {realtimeWsBaseUrl && realtimeWsBaseUrl.trim() !== "" && (
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-foreground">
+                          Realtime STT Model
+                        </label>
+                        <Input
+                          value={selectedCloudModel}
+                          onChange={(e) => onCloudModelSelect(e.target.value)}
+                          placeholder="deepdml/faster-whisper-large-v3-turbo-ct2"
+                          className="h-8 text-sm"
+                        />
+                        <p className="text-[10px] text-muted-foreground">
+                          Model name for the self-hosted STT server
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

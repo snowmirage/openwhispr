@@ -52,8 +52,10 @@ class OpenAIRealtimeStreaming {
     this.speechStartedAt = null;
 
     const baseUrl = wsBaseUrl || "wss://api.openai.com";
-    const url = `${baseUrl}/v1/realtime?intent=transcription`;
-    debugLogger.debug("OpenAI Realtime connecting", { model: this.model, baseUrl });
+    const params = new URLSearchParams({ intent: "transcription" });
+    if (wsBaseUrl && this.model) params.set("model", this.model);
+    const url = `${baseUrl}/v1/realtime?${params}`;
+    debugLogger.debug("OpenAI Realtime connecting", { model: this.model, baseUrl, url });
 
     return new Promise((resolve, reject) => {
       this.pendingResolve = resolve;
