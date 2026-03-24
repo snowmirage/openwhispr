@@ -189,8 +189,9 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   }
 
   getStreamingProvider() {
-    const { cloudTranscriptionModel } = getSettings();
-    if (REALTIME_MODELS.has(cloudTranscriptionModel)) {
+    const { cloudTranscriptionModel, realtimeWsBaseUrl } = getSettings();
+    // Custom WebSocket URL or OpenAI realtime model = use openai-realtime provider
+    if ((realtimeWsBaseUrl && realtimeWsBaseUrl.trim() !== "") || REALTIME_MODELS.has(cloudTranscriptionModel)) {
       return STREAMING_PROVIDERS["openai-realtime"];
     }
     const defaultProvider = this.context === "notes" ? "deepgram" : "openai-realtime";
@@ -1908,6 +1909,11 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     // batch mode even for realtime-capable models (e.g. gpt-4o-mini-transcribe).
     if (this.context !== "notes" && this.sttConfig?.dictation?.mode === "batch") {
       return false;
+    }
+
+    // Custom Realtime WebSocket URL = always use streaming (self-hosted server)
+    if (s.realtimeWsBaseUrl && s.realtimeWsBaseUrl.trim() !== "") {
+      return true;
     }
 
     if (REALTIME_MODELS.has(s.cloudTranscriptionModel)) {
