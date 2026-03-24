@@ -44,6 +44,7 @@ class OpenAIRealtimeStreaming {
     this.isConnecting = true;
     this.model = model || "gpt-4o-mini-transcribe";
     this.preconfigured = !!preconfigured;
+    this.isSelfHosted = !!wsBaseUrl;
     this.completedSegments = [];
     this.currentPartial = "";
     this.audioBytesSent = 0;
@@ -141,23 +142,25 @@ class OpenAIRealtimeStreaming {
               model: this.model,
             });
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) break;
-            this.ws.send(
-              JSON.stringify({
-                type: "transcription_session.update",
-                session: {
+            // Speaches (general Realtime API) uses "session.update";
+            // OpenAI transcription API uses "transcription_session.update"
+            const updateType = this.isSelfHosted ? "session.update" : "transcription_session.update";
+            const sessionConfig = this.isSelfHosted
+              ? {
                   input_audio_format: "pcm16",
-                  input_audio_transcription: {
-                    model: this.model,
-                  },
+                  input_audio_transcription: { model: this.model },
+                }
+              : {
+                  input_audio_format: "pcm16",
+                  input_audio_transcription: { model: this.model },
                   turn_detection: {
                     type: "server_vad",
                     threshold: 0.3,
                     silence_duration_ms: 800,
                     prefix_padding_ms: 500,
                   },
-                },
-              })
-            );
+                };
+            this.ws.send(JSON.stringify({ type: updateType, session: sessionConfig }));
           }
           break;
         }
