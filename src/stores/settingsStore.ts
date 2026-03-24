@@ -243,6 +243,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   ),
   cloudReasoningMode: readString("cloudReasoningMode", "openwhispr"),
   cloudReasoningBaseUrl: readString("cloudReasoningBaseUrl", API_ENDPOINTS.OPENAI_BASE),
+  deepgramWsBaseUrl: readString("deepgramWsBaseUrl", ""),
   customDictionary: readStringArray("customDictionary", []),
   assemblyAiStreaming: readBoolean("assemblyAiStreaming", true),
 
@@ -334,6 +335,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setCloudTranscriptionMode: createStringSetter("cloudTranscriptionMode"),
   setCloudReasoningMode: createStringSetter("cloudReasoningMode"),
   setCloudReasoningBaseUrl: createStringSetter("cloudReasoningBaseUrl"),
+  setDeepgramWsBaseUrl: createStringSetter("deepgramWsBaseUrl"),
   setAssemblyAiStreaming: createBooleanSetter("assemblyAiStreaming"),
   setUseReasoningModel: createBooleanSetter("useReasoningModel"),
   setReasoningModel: createStringSetter("reasoningModel"),
@@ -576,6 +578,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     if (settings.cloudTranscriptionMode !== undefined)
       s.setCloudTranscriptionMode(settings.cloudTranscriptionMode);
     if (settings.customDictionary !== undefined) s.setCustomDictionary(settings.customDictionary);
+    if (settings.deepgramWsBaseUrl !== undefined)
+      s.setDeepgramWsBaseUrl(settings.deepgramWsBaseUrl);
     if (settings.assemblyAiStreaming !== undefined)
       s.setAssemblyAiStreaming(settings.assemblyAiStreaming);
   },

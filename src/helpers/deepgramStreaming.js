@@ -73,6 +73,7 @@ class DeepgramStreaming {
     this.ws = null;
     this.sessionId = null;
     this.isConnected = false;
+    this.customWsBaseUrl = null;
     this.onPartialTranscript = null;
     this.onFinalTranscript = null;
     this.onError = null;
@@ -111,9 +112,31 @@ class DeepgramStreaming {
     this.tokenRefreshFn = fn;
   }
 
+  setCustomWsBaseUrl(url) {
+    this.customWsBaseUrl = url || null;
+  }
+
+  isSelfHosted() {
+    return !!this.customWsBaseUrl;
+  }
+
   buildWebSocketUrl(options) {
     const sampleRate = options.sampleRate || SAMPLE_RATE;
     const lang = options.language && options.language !== "auto" ? options.language : null;
+
+    // Self-hosted (e.g. WhisperLiveKit): use custom base URL, simpler params
+    if (this.customWsBaseUrl) {
+      const params = new URLSearchParams({
+        encoding: "linear16",
+        sample_rate: String(sampleRate),
+        channels: "1",
+        interim_results: "true",
+      });
+      if (lang) params.set("language", lang);
+      this.currentModel = "self-hosted";
+      return `${this.customWsBaseUrl}/v1/listen?${params.toString()}`;
+    }
+
     const baseLang = lang ? lang.split("-")[0].toLowerCase() : null;
     const useNova3 = !lang || NOVA3_LANGUAGES.has(lang) || NOVA3_LANGUAGES.has(baseLang);
     const model = useNova3 ? "nova-3" : "nova-2";

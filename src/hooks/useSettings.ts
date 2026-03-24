@@ -176,6 +176,8 @@ function useSettingsInternal() {
     cloudTranscriptionModel: store.cloudTranscriptionModel,
     cloudTranscriptionBaseUrl: store.cloudTranscriptionBaseUrl,
     cloudReasoningBaseUrl: store.cloudReasoningBaseUrl,
+    deepgramWsBaseUrl: store.deepgramWsBaseUrl,
+    setDeepgramWsBaseUrl: store.setDeepgramWsBaseUrl,
     cloudTranscriptionMode: store.cloudTranscriptionMode,
     cloudReasoningMode: store.cloudReasoningMode,
     customDictionary: store.customDictionary,

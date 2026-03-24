@@ -3851,6 +3851,22 @@ class IPCHandlers {
 
     ipcMain.handle("deepgram-streaming-warmup", async (event, options = {}) => {
       try {
+        if (!this.deepgramStreaming) {
+          this.deepgramStreaming = new DeepgramStreaming();
+        }
+
+        // Self-hosted mode: use custom WebSocket URL, skip cloud token fetch
+        if (options.wsBaseUrl) {
+          this.deepgramStreaming.setCustomWsBaseUrl(options.wsBaseUrl);
+          if (this.deepgramStreaming.hasWarmConnection()) {
+            return { success: true, alreadyWarm: true };
+          }
+          await this.deepgramStreaming.warmup({ ...options, token: "self-hosted" });
+          debugLogger.debug("Deepgram self-hosted connection warmed up", {}, "streaming");
+          return { success: true };
+        }
+
+        // Cloud mode: fetch token from OpenWhispr API
         const apiUrl = getApiUrl();
         if (!apiUrl) {
           return { success: false, error: "API not configured", code: "NO_API" };
@@ -3861,10 +3877,7 @@ class IPCHandlers {
           deepgramTokenWindowId = win.id;
         }
 
-        if (!this.deepgramStreaming) {
-          this.deepgramStreaming = new DeepgramStreaming();
-        }
-
+        this.deepgramStreaming.setCustomWsBaseUrl(null);
         this.deepgramStreaming.setTokenRefreshFn(async () => {
           if (!deepgramTokenWindowId) throw new Error("No window reference");
           return fetchDeepgramStreamingTokenFromWindow(deepgramTokenWindowId);
@@ -3909,24 +3922,33 @@ class IPCHandlers {
 
       deepgramStreamingStartInProgress = true;
       try {
-        const apiUrl = getApiUrl();
-        if (!apiUrl) {
-          return { success: false, error: "API not configured", code: "NO_API" };
-        }
-
-        const win = BrowserWindow.fromWebContents(event.sender);
-        if (win && !win.isDestroyed()) {
-          deepgramTokenWindowId = win.id;
-        }
-
         if (!this.deepgramStreaming) {
           this.deepgramStreaming = new DeepgramStreaming();
         }
 
-        this.deepgramStreaming.setTokenRefreshFn(async () => {
-          if (!deepgramTokenWindowId) throw new Error("No window reference");
-          return fetchDeepgramStreamingTokenFromWindow(deepgramTokenWindowId);
-        });
+        // Self-hosted mode
+        if (options.wsBaseUrl) {
+          this.deepgramStreaming.setCustomWsBaseUrl(options.wsBaseUrl);
+        }
+
+        const isSelfHosted = this.deepgramStreaming.isSelfHosted();
+
+        if (!isSelfHosted) {
+          const apiUrl = getApiUrl();
+          if (!apiUrl) {
+            return { success: false, error: "API not configured", code: "NO_API" };
+          }
+
+          const win = BrowserWindow.fromWebContents(event.sender);
+          if (win && !win.isDestroyed()) {
+            deepgramTokenWindowId = win.id;
+          }
+
+          this.deepgramStreaming.setTokenRefreshFn(async () => {
+            if (!deepgramTokenWindowId) throw new Error("No window reference");
+            return fetchDeepgramStreamingTokenFromWindow(deepgramTokenWindowId);
+          });
+        }
 
         if (this.deepgramStreaming.isConnected) {
           debugLogger.debug("Deepgram cleaning up stale connection before start", {}, "streaming");
@@ -3934,15 +3956,20 @@ class IPCHandlers {
         }
 
         const hasWarm = this.deepgramStreaming.hasWarmConnection();
-        debugLogger.debug("Deepgram streaming start", { hasWarmConnection: hasWarm }, "streaming");
+        debugLogger.debug("Deepgram streaming start", { hasWarmConnection: hasWarm, isSelfHosted }, "streaming");
 
-        let token = this.deepgramStreaming.getCachedToken();
-        if (!token) {
-          debugLogger.debug("Fetching Deepgram streaming token from API", {}, "streaming");
-          token = await fetchDeepgramStreamingToken(event);
-          this.deepgramStreaming.cacheToken(token);
+        let token;
+        if (isSelfHosted) {
+          token = "self-hosted";
         } else {
-          debugLogger.debug("Using cached Deepgram streaming token", {}, "streaming");
+          token = this.deepgramStreaming.getCachedToken();
+          if (!token) {
+            debugLogger.debug("Fetching Deepgram streaming token from API", {}, "streaming");
+            token = await fetchDeepgramStreamingToken(event);
+            this.deepgramStreaming.cacheToken(token);
+          } else {
+            debugLogger.debug("Using cached Deepgram streaming token", {}, "streaming");
+          }
         }
 
         this.deepgramStreaming.onPartialTranscript = (text) => {
