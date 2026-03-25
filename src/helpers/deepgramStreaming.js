@@ -74,6 +74,7 @@ class DeepgramStreaming {
     this.sessionId = null;
     this.isConnected = false;
     this.customWsBaseUrl = null;
+    this.lastPartial = "";
     this.onPartialTranscript = null;
     this.onFinalTranscript = null;
     this.onError = null;
@@ -463,7 +464,7 @@ class DeepgramStreaming {
         wasActive,
       });
       if (this.closeResolve) {
-        this.closeResolve({ text: this.accumulatedText });
+        this.closeResolve({ text: this.getFullText() });
       }
       this.cleanup();
       if (wasActive && !this.isDisconnecting) {
@@ -577,6 +578,7 @@ class DeepgramStreaming {
       keyterms: options.keyterms,
     };
     this.accumulatedText = "";
+    this.lastPartial = "";
     this.finalSegments = [];
     this.audioBytesSent = 0;
     this.resultsReceived = 0;
@@ -654,7 +656,7 @@ class DeepgramStreaming {
           this.pendingResolve = null;
         }
         if (this.closeResolve) {
-          this.closeResolve({ text: this.accumulatedText });
+          this.closeResolve({ text: this.getFullText() });
         }
         this.cleanup();
         if (wasActive && !this.isDisconnecting) {
@@ -707,6 +709,7 @@ class DeepgramStreaming {
             const trimmed = transcript.trim();
             if (trimmed) {
               this.finalSegments.push(trimmed);
+              this.lastPartial = "";
               this.accumulatedText = this.finalSegments.join(" ");
               this.onFinalTranscript?.(this.accumulatedText);
               debugLogger.debug("Deepgram final transcript", {
@@ -715,6 +718,7 @@ class DeepgramStreaming {
               });
             }
           } else {
+            this.lastPartial = transcript.trim();
             this.onPartialTranscript?.(transcript);
           }
           break;
@@ -803,18 +807,31 @@ class DeepgramStreaming {
     return true;
   }
 
+  getFullText() {
+    // Include any trailing partial that hasn't been finalized yet
+    // (self-hosted servers like WhisperLiveKit send mostly partials)
+    if (this.lastPartial) {
+      const parts = [this.accumulatedText, this.lastPartial].filter(Boolean);
+      return parts.join(" ");
+    }
+    return this.accumulatedText;
+  }
+
   async disconnect(closeStream = true) {
     this._generation++;
     clearTimeout(this.livenessTimer);
     this.livenessTimer = null;
 
+    const fullText = this.getFullText();
     debugLogger.debug("Deepgram disconnect", {
       audioBytesSent: this.audioBytesSent,
       resultsReceived: this.resultsReceived,
-      textLength: this.accumulatedText.length,
+      textLength: fullText.length,
+      finalSegments: this.finalSegments.length,
+      hadTrailingPartial: !!this.lastPartial,
     });
 
-    if (!this.ws) return { text: this.accumulatedText };
+    if (!this.ws) return { text: fullText };
 
     this.isDisconnecting = true;
 
@@ -828,8 +845,8 @@ class DeepgramStreaming {
         }),
         new Promise((resolve) => {
           timeoutId = setTimeout(() => {
-            debugLogger.debug("Deepgram close timeout, using accumulated text");
-            resolve({ text: this.accumulatedText });
+            debugLogger.debug("Deepgram close timeout, using full text");
+            resolve({ text: this.getFullText() });
           }, TERMINATION_TIMEOUT_MS);
         }),
       ]);
@@ -839,14 +856,16 @@ class DeepgramStreaming {
       this.cleanup();
       this.isDisconnecting = false;
       this.accumulatedText = "";
+      this.lastPartial = "";
       this.finalSegments = [];
       return result;
     }
 
-    const result = { text: this.accumulatedText };
+    const result = { text: fullText };
     this.cleanup();
     this.isDisconnecting = false;
     this.accumulatedText = "";
+    this.lastPartial = "";
     this.finalSegments = [];
     return result;
   }
