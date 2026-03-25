@@ -3932,6 +3932,7 @@ class IPCHandlers {
         }
 
         const isSelfHosted = this.deepgramStreaming.isSelfHosted();
+        const win = BrowserWindow.fromWebContents(event.sender);
 
         if (!isSelfHosted) {
           const apiUrl = getApiUrl();
@@ -3939,7 +3940,6 @@ class IPCHandlers {
             return { success: false, error: "API not configured", code: "NO_API" };
           }
 
-          const win = BrowserWindow.fromWebContents(event.sender);
           if (win && !win.isDestroyed()) {
             deepgramTokenWindowId = win.id;
           }
