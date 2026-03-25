@@ -178,6 +178,8 @@ interface TranscriptionSectionProps {
   setCustomTranscriptionApiKey: (key: string) => void;
   cloudTranscriptionBaseUrl?: string;
   setCloudTranscriptionBaseUrl: (url: string) => void;
+  deepgramWsBaseUrl?: string;
+  setDeepgramWsBaseUrl: (url: string) => void;
   toast: (opts: {
     title: string;
     description: string;
@@ -213,6 +215,8 @@ function TranscriptionSection({
   setCustomTranscriptionApiKey,
   cloudTranscriptionBaseUrl,
   setCloudTranscriptionBaseUrl,
+  deepgramWsBaseUrl,
+  setDeepgramWsBaseUrl,
   toast,
 }: TranscriptionSectionProps) {
   const { t } = useTranslation();
@@ -392,6 +396,32 @@ function TranscriptionSection({
           variant="settings"
         />
       )}
+
+      {/* Self-hosted streaming STT */}
+      <SettingsPanel>
+        <div className="p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-foreground">
+              Self-hosted streaming STT
+            </label>
+            <span className="text-xs text-muted-foreground">(optional)</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Point to a Deepgram-compatible WebSocket server (e.g. WhisperLiveKit) for fully local streaming transcription. When set, this overrides cloud streaming.
+          </p>
+          <Input
+            value={deepgramWsBaseUrl || ""}
+            onChange={(e) => setDeepgramWsBaseUrl(e.target.value)}
+            placeholder="ws://10.2.0.116:8000"
+            className="h-8 text-sm font-mono"
+          />
+          {deepgramWsBaseUrl && (
+            <p className="text-xs text-green-600 dark:text-green-400">
+              Streaming will use {deepgramWsBaseUrl}/v1/listen
+            </p>
+          )}
+        </div>
+      </SettingsPanel>
     </div>
   );
 }
@@ -669,6 +699,8 @@ export default function SettingsPage({ activeSection = "general" }: SettingsPage
     setCloudTranscriptionProvider,
     setCloudTranscriptionModel,
     setCloudTranscriptionBaseUrl,
+    deepgramWsBaseUrl,
+    setDeepgramWsBaseUrl,
     setCloudReasoningBaseUrl,
     setUseReasoningModel,
     setReasoningModel,
@@ -2879,6 +2911,8 @@ EOF`,
             setCustomTranscriptionApiKey={setCustomTranscriptionApiKey}
             cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
             setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+            deepgramWsBaseUrl={deepgramWsBaseUrl}
+            setDeepgramWsBaseUrl={setDeepgramWsBaseUrl}
             toast={toast}
           />
         );

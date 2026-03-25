@@ -189,7 +189,11 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   }
 
   getStreamingProvider() {
-    const { cloudTranscriptionModel } = getSettings();
+    // Self-hosted: always use Deepgram-compatible streaming
+    const { cloudTranscriptionModel, deepgramWsBaseUrl } = getSettings();
+    if (deepgramWsBaseUrl) {
+      return STREAMING_PROVIDERS["deepgram"];
+    }
     if (REALTIME_MODELS.has(cloudTranscriptionModel)) {
       return STREAMING_PROVIDERS["openai-realtime"];
     }
@@ -199,6 +203,8 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   }
 
   getStreamingProviderName() {
+    const { deepgramWsBaseUrl } = getSettings();
+    if (deepgramWsBaseUrl) return "deepgram";
     const defaultProvider = this.context === "notes" ? "deepgram" : "openai-realtime";
     return this.sttConfig?.streamingProvider || defaultProvider;
   }
